@@ -7,7 +7,6 @@ import { today } from "../utils/date-time";
 
 export default function Form({
   submitHandler,
-  onCancel,
   initialState = {
     first_name: "",
     last_name: "",

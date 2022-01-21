@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import {useHistory } from "react-router-dom";
 import { listTables } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
 import { deleteSeat } from "../utils/api";
@@ -13,6 +14,7 @@ export default function Tables() {
   const [tables, setTables] = useState([]);
   const [tablesError, setTablesError] = useState(null);
   useEffect(loadTables, []);
+  const history = useHistory()
 
   function loadTables() {
     const abortController = new AbortController();
@@ -21,12 +23,16 @@ export default function Tables() {
     return () => abortController.abort();
   }
 
-  function handleFinish() {
+  async function handleFinish(table_id, reservation_id) {
     if (
       window.confirm(
-        "Is this table ready to seat new guests? \nThis cannot be undone."
+        "Is this table ready to seat new guests? \n This cannot be undone."
       )
     ) {
+      const ac = new AbortController();
+      await deleteSeat(table_id, reservation_id, ac.signal)
+      history.go()
+      return () => ac.abort();
     }
   }
 
@@ -39,9 +45,13 @@ export default function Tables() {
         {table.reservation_id === null ? "Free" : "Occupied"}
       </td>
       <td>{table.reservation_id}</td>
-      <td data-table-id-status={table.table_id}>
+      <td>
         {table.reservation_id !== null ? (
-          <button onClick={() => handleFinish()} className="btn btn-primary m-2">
+          <button
+            onClick={() => handleFinish(table.table_id, table.reservation_id)}
+            className="btn btn-primary m-2"
+            data-table-id-finish={table.table_id}
+          >
             Finish
           </button>
         ) : null}

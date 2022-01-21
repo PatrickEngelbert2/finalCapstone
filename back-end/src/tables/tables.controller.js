@@ -58,7 +58,6 @@ async function updateErrorValidation(req, res, next) {
     next({ status: 400, message: "reservation_id cannot be empty" });
   }
   const reservation = await service.getReservationById(reservation_id);
-  console.log("reservation: ", reservation)
   if (!reservation) {
     return next({
       status: 404,
@@ -67,12 +66,13 @@ async function updateErrorValidation(req, res, next) {
   }
   const table = await service.read(table_id);
   if (table.capacity < reservation.people) {
-    errors.push(`Table capacity of ${table.capacity} is less than reservation party size of ${reservation.people}.`);
+    errors.push(
+      `Table capacity of ${table.capacity} is less than reservation party size of ${reservation.people}.`
+    );
   }
   if (table.reservation_id) {
     errors.push(`This table is occupied and cannot be assigned a new party.`);
   }
-  console.log("table: ", table);
   if (errors.length) {
     next({
       status: 400,
@@ -81,17 +81,6 @@ async function updateErrorValidation(req, res, next) {
   }
 
   next();
-}
-
-async function tableIdExists(req, res, next) {
-  const { table_id } = req.params;
-  const table = await service.read(table_id);
-  if (table) {
-    res.locals.table_id = table_id;
-    res.locals.table = table;
-    return next();
-  }
-  return next({ status: 404, message: `Table cannot be found.` });
 }
 
 async function reservationIdExists(req, res, next) {
@@ -111,6 +100,24 @@ async function update(req, res, next) {
   res.json({ data });
 }
 
+async function tableIdExists(req, res, next) {
+  const { table_id } = req.params;
+  const table = await service.read(table_id);
+  if (!table) {
+    return next({ status: 404, message: `Table ${table_id} cannot be found.` });
+  }
+  if (table.reservation_id === null) {
+    return next({ status: 400, message: `Table is not occupied.` });
+  }
+  res.locals.reservation_id = table.reservation_id;
+  return next();
+}
+
+async function unseat(req, res, next) {
+  await service.destroy(res.locals.reservation_id);
+  res.status(200).json({});
+}
+
 module.exports = {
   list: [asyncErrorBoundary(list)],
   create: [errorValidation, asyncErrorBoundary(create)],
@@ -118,4 +125,5 @@ module.exports = {
     asyncErrorBoundary(updateErrorValidation),
     asyncErrorBoundary(update),
   ],
+  destroy: [asyncErrorBoundary(tableIdExists), asyncErrorBoundary(unseat)],
 };

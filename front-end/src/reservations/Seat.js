@@ -13,7 +13,7 @@ export default function Seat() {
   const [tables, setTables] = useState([]);
   const [tablesError, setTablesError] = useState(null);
   const history = useHistory();
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState(null);
   useEffect(loadTables, []);
   const { reservation_id } = useParams();
 
@@ -27,9 +27,11 @@ export default function Seat() {
   const handleSubmit = async (evt) => {
     evt.preventDefault();
     evt.stopPropagation();
-    await seatTable(selected, reservation_id)
+    const ac = new AbortController();
+    await seatTable(selected, reservation_id, ac.signal)
       .then((response) => history.push(`/dashboard`))
       .catch(setTablesError);
+    return () => ac.abort();
   };
 
   let mappedTableOptions = tables.map((table) => (

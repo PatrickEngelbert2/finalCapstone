@@ -9,17 +9,14 @@ export default function Create(handleSubmit) {
   const [createError, setCreateError] = useState(null);
   const submitHandler = async (reservation) => {
     reservation.people = Number(reservation.people);
-    await createReservation(reservation)
-      .then(response => history.push(`/dashboard?date=${reservation.reservation_date}`))
+    const ac = new AbortController();
+    await createReservation(reservation, ac.signal)
+      .then((response) =>
+        history.push(`/dashboard?date=${reservation.reservation_date}`)
+      )
       .catch(setCreateError);
-    // history.push(`/dashboard?date=${reservation.reservation_date}`);
+    return () => ac.abort();
   };
-  //   function cancel () {
-
-  //   }
-  //   function createError() {
-
-  //   }
 
   return (
     <div>

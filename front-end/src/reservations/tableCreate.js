@@ -22,9 +22,11 @@ export default function TableCreate() {
     evt.preventDefault();
     evt.stopPropagation();
     table.capacity = Number(table.capacity);
-    await createTable(table)
+    const ac = new AbortController();
+    await createTable(table, ac.signal)
       .then((response) => history.push(`/dashboard`))
       .catch(setCreateError);
+    return () => ac.abort();
     // history.push(`/dashboard?date=${reservation.reservation_date}`);
   };
 

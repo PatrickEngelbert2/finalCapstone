@@ -28,10 +28,15 @@ function update(reservation_id, table_id) {
     .then((res) => res[0]);
 }
 
+function destroy(reservation_id) {
+  return knex("tables").select("*").where({ reservation_id }).update({reservation_id: null});
+}
+
 module.exports = {
   listTables,
   getReservationById,
   create,
   read,
   update,
+  destroy,
 };
