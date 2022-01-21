@@ -52,6 +52,28 @@ async function fetchJson(url, options, onCancel) {
   }
 }
 
+export async function createTable(table, signal) {
+  const url = `${API_BASE_URL}/tables`;
+  const options = {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ data: table }),
+    signal,
+  };
+  return await fetchJson(url, options, table);
+}
+
+export async function createReservation(reservation, signal) {
+  const url = `${API_BASE_URL}/reservations`;
+  const options = {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ data: reservation }),
+    signal,
+  };
+  return await fetchJson(url, options, reservation);
+}
+
 /**
  * Retrieves all existing reservation.
  * @returns {Promise<[reservation]>}
@@ -66,4 +88,31 @@ export async function listReservations(params, signal) {
   return await fetchJson(url, { headers, signal }, [])
     .then(formatReservationDate)
     .then(formatReservationTime);
+}
+
+export async function listTables(signal) {
+  const url = new URL(`${API_BASE_URL}/tables`);
+  return await fetchJson(url, { headers, signal, method: "GET" });
+}
+
+export async function seatTable(table_id, reservation_id, signal) {
+  const url = `${API_BASE_URL}/tables/${table_id}/seat`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data: { reservation_id: reservation_id } }),
+    signal,
+  };
+  return await fetchJson(url, options, reservation_id);
+}
+
+export async function deleteSeat(table_id, reservation_id, signal) {
+  const url = `${API_BASE_URL}/tables/${table_id}/seat`;
+  const options = {
+    method: "DELETE",
+    headers,
+    body: JSON.stringify({ data: { reservation_id: reservation_id } }),
+    signal,
+  };
+  return await fetchJson(url, options, reservation_id);
 }
