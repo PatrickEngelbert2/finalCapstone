@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Link } from "react";
 import { listReservations } from "../utils/api";
+import { next, previous, today } from "../utils/date-time"
 import ErrorAlert from "../layout/ErrorAlert";
-import useQuery from "../utils/useQuery"
+import useQuery from "../utils/useQuery";
+import Tables from "./Tables";
+import { useHistory } from "react-router";
 
 /**
  * Defines the dashboard page.
@@ -12,10 +15,23 @@ import useQuery from "../utils/useQuery"
 function Dashboard({ date }) {
   const [reservations, setReservations] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
-  const query = useQuery()
-  const getDate = query.get("date")
-  if (getDate) date = getDate
+  const history = useHistory();
+  const query = useQuery();
+  const getDate = query.get("date");
+  if (getDate) date = getDate;
   useEffect(loadDashboard, [date]);
+
+  function handleDateChange (isNext, isToday = false) {
+    if (isNext) {
+      history.push(`/dashboard/?date=${next(date)}`)
+    }
+    if (!isNext && !isToday) {
+      history.push(`/dashboard/?date=${previous(date)}`)
+    }
+    if (isToday) {
+      history.push(`/dashboard`)
+    }
+  }
 
   function loadDashboard() {
     const abortController = new AbortController();
@@ -27,17 +43,23 @@ function Dashboard({ date }) {
   }
 
   let mappedReservations = reservations.map((reservation) => (
-  <tbody>
-    <tr>
-      <th scope="row">{reservation.reservation_id}</th>
-      <td>{reservation.first_name}</td>
-      <td>{reservation.last_name}</td>
-      <td>{reservation.mobile_number}</td>
-      <td>{reservation.reservation_date}</td>
-      <td>{reservation.reservation_time}</td>
-      <td>{reservation.people}</td>
-    </tr>
-  </tbody>
+      <tr key={reservation.reservation_id}>
+        <th scope="row">{reservation.reservation_id}</th>
+        <td>{reservation.first_name}</td>
+        <td>{reservation.last_name}</td>
+        <td>{reservation.mobile_number}</td>
+        <td>{reservation.reservation_date}</td>
+        <td>{reservation.reservation_time}</td>
+        <td>{reservation.people}</td>
+        <td>
+        <a
+          href={`/reservations/${reservation.reservation_id}/seat`}
+          className="btn btn-primary m-2"
+        >
+          Seat
+        </a>
+        </td>
+      </tr>
   ));
 
   return (
@@ -47,20 +69,32 @@ function Dashboard({ date }) {
         <h4 className="mb-0">Reservations for date</h4>
       </div>
       <ErrorAlert error={reservationsError} />
+      <button onClick={() => handleDateChange(true)} className="btn btn-primary m-2">
+        Next
+      </button>
+      <button onClick={() => handleDateChange(false)} className="btn btn-secondary m-2">
+        Back
+      </button>
+      <button onClick={() => handleDateChange(false, true)} className="btn btn-warning m-2">
+        Today
+      </button>
       <table className="table table-dark table-striped table-hover">
-  <thead>
-    <tr>
-      <th scope="col">Id</th>
-      <th scope="col">First</th>
-      <th scope="col">Last</th>
-      <th scope="col">Mobile Number</th>
-      <th scope="col">Reservation Date</th>
-      <th scope="col">Reservation Time</th>
-      <th scope="col">Party Size</th>
-    </tr>
-  </thead>
-      {reservations.length && mappedReservations}
+        <thead>
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+            <th scope="col">Mobile Number</th>
+            <th scope="col">Reservation Date</th>
+            <th scope="col">Reservation Time</th>
+            <th scope="col">Party Size</th>
+          </tr>
+        </thead>
+        <tbody>
+        {reservations.length ? mappedReservations : null}
+        </tbody>
       </table>
+      <Tables />
     </main>
   );
 }

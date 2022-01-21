@@ -14,7 +14,6 @@ export default function Create(handleSubmit) {
       .catch(setCreateError);
     // history.push(`/dashboard?date=${reservation.reservation_date}`);
   };
-  console.log(createError);
   //   function cancel () {
 
   //   }

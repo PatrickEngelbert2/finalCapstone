@@ -9,28 +9,45 @@ async function list(req, res, next) {
   res.json({ data });
 }
 
+async function reservationIdExists(req, res, next) {
+  const { reservation_id } = req.params;
+  const reservation = await service.getReservationById(reservation_id);
+  if (reservation) {
+    res.locals.reservation = reservation;
+    res.status(200).json({ data: reservation });
+  }
+  return next({
+    status: 404,
+    message: `Reservation ${reservation_id} cannot be found.`,
+  });
+}
+
+async function getReservationById(req, res, next) {
+  res.json({ data: res.locals.reservation });
+}
+
 function errorValidation(req, res, next) {
   let errors = [];
   const { data } = req.body;
-  if (!data) {
-    // next({ status: 400, message: "data cannot be empty" });
-    errors.push("data cannot be empty")
-  } 
+  if (!req.body.data) {
+    next({ status: 400, message: "data cannot be empty" });
+    // errors.push("data cannot be empty")
+  }
   if (!data.first_name || data.first_name === "") {
     // next({ status: 400, message: "first_name cannot be empty" });
-    errors.push("first_name cannot be empty")
+    errors.push("first_name cannot be empty");
   }
   if (!data.last_name || data.last_name === "") {
     // next({ status: 400, message: "last_name cannot be empty" });
-    errors.push("last_name cannot be empty")
+    errors.push("last_name cannot be empty");
   }
   if (!data.mobile_number || data.mobile_number === "") {
     // next({ status: 400, message: "mobile_number cannot be empty" });
-    errors.push("mobile_number cannot be empty")
+    errors.push("mobile_number cannot be empty");
   }
   if (!data.people || !data.people > 0 || !Number.isInteger(data.people)) {
     // next({ status: 400, message: "people must be a number > 0" });
-    errors.push("people must be a number > 0")
+    errors.push("people must be a number > 0");
   }
 
   const dateFormat = /\d\d\d\d-\d\d-\d\d/;
@@ -40,14 +57,14 @@ function errorValidation(req, res, next) {
     //   status: 400,
     //   message: "reservation_date must be a date",
     // });
-    errors.push("reservation_date must be a date")
+    errors.push("reservation_date must be a date");
   }
   if (!data.reservation_time || !data.reservation_time.match(timeFormat)) {
     // next({
     //   status: 400,
     //   message: "reservation_time must be a time",
     // });
-    errors.push("reservation_time must be a time")
+    errors.push("reservation_time must be a time");
   }
 
   if (dateIsInPast(data.reservation_date)) {
@@ -55,28 +72,37 @@ function errorValidation(req, res, next) {
     //   status: 400,
     //   message: "reservation_date must be in the future",
     // });
-    errors.push("reservation_date must be in the future")
+    errors.push("reservation_date must be in the future");
   }
-  const dateAndTime = `${data.reservation_date} ${data.reservation_time}`
+  const dateAndTime = `${data.reservation_date} ${data.reservation_time}`;
   if (isTuesday(dateAndTime)) {
     // next({
     //   status: 400,
-    //   message: "The resturaunt is closed on Tuesday",
+    //   message: "The restaurant is closed on Tuesday",
     // });
-    errors.push("The resturaunt is closed on Tuesday")
+    errors.push("The restaurant is closed on Tuesday");
   }
-
-  console.log(typeof(data.reservation_time))
-
-  if (compareTime(data.reservation_time, "10:30") || !compareTime(data.reservation_time, "21:30")) {
-    errors.push("The resturaunt is open from 10:30AM to 9:30PM")
+  const reservationTime = new Date(
+    `${req.body.data.reservation_date} ${req.body.data.reservation_time}`
+  );
+  if (reservationTime.getHours() === 10 && reservationTime.getMinutes() < 30) {
+    errors.push("The restaurant is open from 10:30AM to 9:30PM");
+  }
+  if (reservationTime.getHours() === 21 && reservationTime.getMinutes() > 30) {
+    errors.push("The restaurant is open from 10:30AM to 9:30PM");
+  }
+  if (reservationTime.getHours() < 10) {
+    errors.push("The restaurant is open from 10:30AM to 9:30PM");
+  }
+  if (reservationTime.getHours() > 21) {
+    errors.push("The restaurant is open from 10:30AM to 9:30PM");
   }
 
   if (errors.length) {
     next({
       status: 400,
-      message: errors.join(", ")
-    })
+      message: errors.join(", "),
+    });
   }
 
   next();
@@ -84,7 +110,7 @@ function errorValidation(req, res, next) {
 
 const compareTime = (time1, time2) => {
   return new Date(time1) > new Date(time2); // true if time1 is later
-}
+};
 
 const isTuesday = (date) => {
   const newDate = new Date(date);
@@ -105,5 +131,7 @@ async function create(req, res, next) {
 
 module.exports = {
   list: [asyncErrorBoundary(list)],
+  getReservationById: [asyncErrorBoundary(reservationIdExists)],
+  reservationIdExists,
   create: [errorValidation, asyncErrorBoundary(create)],
 };

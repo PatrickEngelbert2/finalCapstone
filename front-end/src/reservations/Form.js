@@ -34,7 +34,7 @@ export default function Form({
   }
 
   return (
-    <form className="needs-validation" onSubmit={handleSubmit} novalidate>
+    <form className="needs-validation" onSubmit={handleSubmit} noValidate>
       <div className="form-row">
         <div className="col-md-4 mb-3">
           <label htmlFor="validationCustom01">First name</label>
