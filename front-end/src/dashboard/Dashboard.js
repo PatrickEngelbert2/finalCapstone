@@ -3,6 +3,7 @@ import { listReservations } from "../utils/api";
 import { next, previous, today } from "../utils/date-time"
 import ErrorAlert from "../layout/ErrorAlert";
 import useQuery from "../utils/useQuery";
+import ReservationsList from "./ReservationsList"
 import Tables from "./Tables";
 import { useHistory } from "react-router";
 
@@ -42,26 +43,6 @@ function Dashboard({ date }) {
     return () => abortController.abort();
   }
 
-  let mappedReservations = reservations.map((reservation) => (
-      <tr key={reservation.reservation_id}>
-        <th scope="row">{reservation.reservation_id}</th>
-        <td>{reservation.first_name}</td>
-        <td>{reservation.last_name}</td>
-        <td>{reservation.mobile_number}</td>
-        <td>{reservation.reservation_date}</td>
-        <td>{reservation.reservation_time}</td>
-        <td>{reservation.people}</td>
-        <td>
-        <a
-          href={`/reservations/${reservation.reservation_id}/seat`}
-          className="btn btn-primary m-2"
-        >
-          Seat
-        </a>
-        </td>
-      </tr>
-  ));
-
   return (
     <main>
       <h1>Dashboard</h1>
@@ -78,22 +59,7 @@ function Dashboard({ date }) {
       <button onClick={() => handleDateChange(false, true)} className="btn btn-warning m-2">
         Today
       </button>
-      <table className="table table-dark table-striped table-hover">
-        <thead>
-          <tr>
-            <th scope="col">Id</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
-            <th scope="col">Mobile Number</th>
-            <th scope="col">Reservation Date</th>
-            <th scope="col">Reservation Time</th>
-            <th scope="col">Party Size</th>
-          </tr>
-        </thead>
-        <tbody>
-        {reservations.length ? mappedReservations : null}
-        </tbody>
-      </table>
+      <ReservationsList reservations={reservations} />
       <Tables />
     </main>
   );

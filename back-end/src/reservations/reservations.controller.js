@@ -5,24 +5,17 @@ const service = require("./reservations.service");
 const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
 
 async function list(req, res, next) {
-  const data = await service.listReservations(req.query.date);
+  let data;
+  if (req.query.mobile_number) {
+    data = await service.search(req.query.mobile_number);
+    console.log("searching by phone", data)
+  } else {
+    data = await service.listReservations(req.query.date);
+  }
   res.json({ data });
 }
 
-async function reservationIdExists(req, res, next) {
-  const { reservation_id } = req.params;
-  const reservation = await service.getReservationById(reservation_id);
-  if (reservation) {
-    res.locals.reservation = reservation;
-    res.status(200).json({ data: reservation });
-  }
-  return next({
-    status: 404,
-    message: `Reservation ${reservation_id} cannot be found.`,
-  });
-}
-
-async function getReservationById(req, res, next) {
+function getReservationById(req, res, next) {
   res.json({ data: res.locals.reservation });
 }
 
@@ -48,6 +41,12 @@ function errorValidation(req, res, next) {
   if (!data.people || !data.people > 0 || !Number.isInteger(data.people)) {
     // next({ status: 400, message: "people must be a number > 0" });
     errors.push("people must be a number > 0");
+  }
+  if (data.status && data.status !== "booked") {
+    // next({ status: 400, message: "" });
+    errors.push(
+      `A new reservation must have a status of booked. You entered ${data.status}.`
+    );
   }
 
   const dateFormat = /\d\d\d\d-\d\d-\d\d/;
@@ -108,10 +107,6 @@ function errorValidation(req, res, next) {
   next();
 }
 
-const compareTime = (time1, time2) => {
-  return new Date(time1) > new Date(time2); // true if time1 is later
-};
-
 const isTuesday = (date) => {
   const newDate = new Date(date);
   if (newDate.getDay() == 2) return true;
@@ -129,9 +124,57 @@ async function create(req, res, next) {
   res.status(201).json({ data: newReservation });
 }
 
+async function reservationIdExists(req, res, next) {
+  const { reservation_id } = req.params;
+  const reservation = await service.getReservationById(reservation_id);
+  if (reservation) {
+    res.locals.reservation = reservation;
+    return next();
+  }
+  return next({
+    status: 404,
+    message: `Reservation ${reservation_id} cannot be found.`,
+  });
+}
+
+function statusValid(req, res, next) {
+  const { status } = req.body.data;
+  const resStatus = res.locals.reservation.status;
+  if (status !== "booked" && status !== "seated" && status !== "finished") {
+    return next({
+      status: 400,
+      message: "Status is unknown. Status must be booked, seated, or finished",
+    });
+    // errors.push("Request status must be booked, seated, or finished")
+  }
+  if (resStatus === "finished") {
+    return next({
+      status: 400,
+      message: "A finished reservation cannot be updated",
+    });
+    // errors.push("A finished reservation cannot be updated")
+  }
+
+  next();
+}
+
+async function updateStatus(req, res, next) {
+  const { status } = req.body.data;
+  const { reservation_id } = req.params;
+  const updatedReservation = await service.updateStatus(status, reservation_id);
+  res.status(200).json({ data: updatedReservation });
+}
+
 module.exports = {
   list: [asyncErrorBoundary(list)],
-  getReservationById: [asyncErrorBoundary(reservationIdExists)],
-  reservationIdExists,
+  getReservationById: [
+    asyncErrorBoundary(reservationIdExists),
+    getReservationById,
+  ],
   create: [errorValidation, asyncErrorBoundary(create)],
+  updateStatus: [
+    asyncErrorBoundary(reservationIdExists),
+    statusValid,
+    asyncErrorBoundary(updateStatus),
+  ],
 };

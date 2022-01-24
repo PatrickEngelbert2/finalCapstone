@@ -106,6 +106,19 @@ export async function seatTable(table_id, reservation_id, signal) {
   return await fetchJson(url, options, reservation_id);
 }
 
+//status in the 1st param will be a string with "finished", "booked", or "seated"
+
+export async function updateResStatus(status, reservation_id, signal) {
+  const url = `${API_BASE_URL}/reservation/${reservation_id}/status`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data: { status: status } }),
+    signal,
+  };
+  return await fetchJson(url, options, reservation_id);
+}
+
 export async function deleteSeat(table_id, reservation_id, signal) {
   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
   const options = {

@@ -64,6 +64,13 @@ async function updateErrorValidation(req, res, next) {
       message: `Reservation ${reservation_id} cannot be found.`,
     });
   }
+  console.log(reservation.status)
+  if (reservation.status === "seated") {
+    return next({
+      status: 400,
+      message: `Reservation ${reservation_id} is already seated.`,
+    });
+  }
   const table = await service.read(table_id);
   if (table.capacity < reservation.people) {
     errors.push(
@@ -115,7 +122,8 @@ async function tableIdExists(req, res, next) {
 
 async function unseat(req, res, next) {
   await service.destroy(res.locals.reservation_id);
-  res.status(200).json({});
+  const data = await service.resStatusFinished(res.locals.reservation_id);
+  res.status(200).json({data});
 }
 
 module.exports = {
