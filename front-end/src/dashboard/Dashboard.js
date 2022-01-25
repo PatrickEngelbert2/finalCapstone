@@ -1,9 +1,9 @@
-import React, { useEffect, useState, Link } from "react";
+import React, { useEffect, useState } from "react";
 import { listReservations } from "../utils/api";
-import { next, previous, today } from "../utils/date-time"
+import { next, previous } from "../utils/date-time";
 import ErrorAlert from "../layout/ErrorAlert";
 import useQuery from "../utils/useQuery";
-import ReservationsList from "./ReservationsList"
+import ReservationsList from "./ReservationsList";
 import Tables from "./Tables";
 import { useHistory } from "react-router";
 
@@ -22,15 +22,15 @@ function Dashboard({ date }) {
   if (getDate) date = getDate;
   useEffect(loadDashboard, [date]);
 
-  function handleDateChange (isNext, isToday = false) {
+  function handleDateChange(isNext, isToday = false) {
     if (isNext) {
-      history.push(`/dashboard/?date=${next(date)}`)
+      history.push(`/dashboard/?date=${next(date)}`);
     }
     if (!isNext && !isToday) {
-      history.push(`/dashboard/?date=${previous(date)}`)
+      history.push(`/dashboard/?date=${previous(date)}`);
     }
     if (isToday) {
-      history.push(`/dashboard`)
+      history.push(`/dashboard`);
     }
   }
 
@@ -50,13 +50,22 @@ function Dashboard({ date }) {
         <h4 className="mb-0">Reservations for date</h4>
       </div>
       <ErrorAlert error={reservationsError} />
-      <button onClick={() => handleDateChange(true)} className="btn btn-primary m-2">
+      <button
+        onClick={() => handleDateChange(true)}
+        className="btn btn-primary m-2"
+      >
         Next
       </button>
-      <button onClick={() => handleDateChange(false)} className="btn btn-secondary m-2">
+      <button
+        onClick={() => handleDateChange(false)}
+        className="btn btn-secondary m-2"
+      >
         Back
       </button>
-      <button onClick={() => handleDateChange(false, true)} className="btn btn-warning m-2">
+      <button
+        onClick={() => handleDateChange(false, true)}
+        className="btn btn-warning m-2"
+      >
         Today
       </button>
       <ReservationsList reservations={reservations} />

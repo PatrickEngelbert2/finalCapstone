@@ -8,7 +8,6 @@ async function list(req, res, next) {
   let data;
   if (req.query.mobile_number) {
     data = await service.search(req.query.mobile_number);
-    console.log("searching by phone", data)
   } else {
     data = await service.listReservations(req.query.date);
   }
@@ -140,10 +139,16 @@ async function reservationIdExists(req, res, next) {
 function statusValid(req, res, next) {
   const { status } = req.body.data;
   const resStatus = res.locals.reservation.status;
-  if (status !== "booked" && status !== "seated" && status !== "finished") {
+  if (
+    status !== "booked" &&
+    status !== "seated" &&
+    status !== "finished" &&
+    status !== "cancelled"
+  ) {
     return next({
       status: 400,
-      message: "Status is unknown. Status must be booked, seated, or finished",
+      message:
+        "Status is unknown. Status must be booked, seated, cancelled, or finished",
     });
     // errors.push("Request status must be booked, seated, or finished")
   }
@@ -165,6 +170,16 @@ async function updateStatus(req, res, next) {
   res.status(200).json({ data: updatedReservation });
 }
 
+async function updateReservation(req, res, next) {
+  const { reservation_id } = req.params;
+  const updatedReservation = {
+    ...req.body.data,
+    reservation_id: reservation_id,
+  };
+  let data = await service.updateReservation(updatedReservation);
+  res.json({ data });
+}
+
 module.exports = {
   list: [asyncErrorBoundary(list)],
   getReservationById: [
@@ -177,4 +192,5 @@ module.exports = {
     statusValid,
     asyncErrorBoundary(updateStatus),
   ],
+  updateReservation: [asyncErrorBoundary(reservationIdExists), errorValidation, asyncErrorBoundary(updateReservation)],
 };

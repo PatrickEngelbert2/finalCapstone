@@ -26,7 +26,7 @@ export default function Tables() {
   async function handleFinish(table_id, reservation_id) {
     if (
       window.confirm(
-        "Is this table ready to seat new guests? \n This cannot be undone."
+        "Is this table ready to seat new guests? \nThis cannot be undone."
       )
     ) {
       const ac = new AbortController();

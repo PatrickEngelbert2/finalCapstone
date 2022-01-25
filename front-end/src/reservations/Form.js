@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useRouteMatch, useParams, useHistory } from "react-router-dom";
-import { formatReservationDate } from "../utils/format-reservation-date"
-import { formatReservationTime } from "../utils/format-reservation-time"
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
 
 import { today } from "../utils/date-time";
 
@@ -36,12 +34,13 @@ export default function Form({
     <form className="needs-validation" onSubmit={handleSubmit} noValidate>
       <div className="form-row">
         <div className="col-md-4 mb-3">
-          <label htmlFor="validationCustom01">First name</label>
+          <label htmlFor="first_name">First name</label>
           <input
             name="first_name"
             type="text"
             className="form-control"
             id="first_name"
+            placeholder={reservation.first_name}
             value={reservation.first_name}
             onChange={changeHandler}
             required
@@ -55,6 +54,7 @@ export default function Form({
             type="text"
             className="form-control"
             id="last_name"
+            placeholder={reservation.last_name}
             value={reservation.last_name}
             onChange={changeHandler}
             required
@@ -74,7 +74,8 @@ export default function Form({
               type="text"
               className="form-control"
               id="mobile_number"
-              value={reservation.phone_number}
+              placeholder={reservation.mobile_number}
+              value={reservation.mobile_number}
               onChange={changeHandler}
               aria-describedby="inputGroupPrepend"
               required
@@ -90,9 +91,9 @@ export default function Form({
           <label htmlFor="reservation_date">Date</label>
           <input
             name="reservation_date"
-            placeholder="YYYY-MM-DD"
             pattern="\d{4}-\d{2}-\d{2}"
             type="date"
+            placeholder={reservation.reservation_date}
             value={reservation.reservation_date}
             onChange={changeHandler}
             className="form-control"
@@ -102,13 +103,12 @@ export default function Form({
           <div className="invalid-feedback">Please provide a valid date.</div>
         </div>
         <div className="col-md-3 mb-3">
-          <label htmlFor="validationCustom04">Time</label>
+          <label htmlFor="reservation_time">Time</label>
           <input
             type="time"
-            placeholder="HH:MM"
-            pattern="[0-9]{2}:[0-9]{2}"
             name="reservation_time"
             className="form-control"
+            placeholder={reservation.reservation_time}
             value={reservation.reservation_time}
             onChange={changeHandler}
             id="reservation_time"
@@ -117,14 +117,15 @@ export default function Form({
           <div className="invalid-feedback">Please select a valid time.</div>
         </div>
         <div className="col-md-3 mb-3">
-          <label htmlFor="validationCustom05">Party Size</label>
+          <label htmlFor="people">Party Size</label>
           <input
             name="people"
             type="number"
             className="form-control"
+            placeholder={reservation.people}
             value={reservation.people}
             onChange={changeHandler}
-            id="validationCustom05"
+            id="people"
             required
           />
           <div className="invalid-feedback">
@@ -135,7 +136,10 @@ export default function Form({
       <button className="btn btn-primary" type="submit">
         Submit
       </button>
-      <button onClick={history.goBack} className="btn btn-warning m-2">
+      <button
+        onClick={() => history.goBack()}
+        className="btn btn-warning m-2"
+      >
         Cancel
       </button>
     </form>

@@ -45,7 +45,6 @@ async function fetchJson(url, options, onCancel) {
     return payload.data;
   } catch (error) {
     if (error.name !== "AbortError") {
-      console.error(error.stack);
       throw error;
     }
     return Promise.resolve(onCancel);
@@ -95,6 +94,11 @@ export async function listTables(signal) {
   return await fetchJson(url, { headers, signal, method: "GET" });
 }
 
+export async function getReservationById(reservation_id, signal) {
+  const url = new URL(`${API_BASE_URL}/reservations/${reservation_id}`);
+  return await fetchJson(url, { headers, signal, method: "GET" });
+}
+
 export async function seatTable(table_id, reservation_id, signal) {
   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
   const options = {
@@ -109,7 +113,7 @@ export async function seatTable(table_id, reservation_id, signal) {
 //status in the 1st param will be a string with "finished", "booked", or "seated"
 
 export async function updateResStatus(status, reservation_id, signal) {
-  const url = `${API_BASE_URL}/reservation/${reservation_id}/status`;
+  const url = `${API_BASE_URL}/reservations/${reservation_id}/status`;
   const options = {
     method: "PUT",
     headers,
@@ -117,6 +121,17 @@ export async function updateResStatus(status, reservation_id, signal) {
     signal,
   };
   return await fetchJson(url, options, reservation_id);
+}
+
+export async function updateReservation(reservation, signal) {
+  const url = `${API_BASE_URL}/reservations/${reservation.reservation_id}`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data: { ...reservation } }),
+    signal,
+  };
+  return await fetchJson(url, options, reservation);
 }
 
 export async function deleteSeat(table_id, reservation_id, signal) {

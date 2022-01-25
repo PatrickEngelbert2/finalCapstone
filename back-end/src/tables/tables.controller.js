@@ -64,7 +64,6 @@ async function updateErrorValidation(req, res, next) {
       message: `Reservation ${reservation_id} cannot be found.`,
     });
   }
-  console.log(reservation.status)
   if (reservation.status === "seated") {
     return next({
       status: 400,

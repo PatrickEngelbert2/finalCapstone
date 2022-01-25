@@ -8,6 +8,7 @@ import Create from "../reservations/Create";
 import TableCreate from "../reservations/tableCreate";
 import Seat from "../reservations/Seat";
 import Search from "../search/Search";
+import EditReservation from "../reservations/EditReservation"
 
 /**
  * Defines all the routes for the application.
@@ -31,6 +32,9 @@ function Routes() {
       </Route>
       <Route exact={true} path="/reservations/:reservation_id/seat">
         <Seat />
+      </Route>
+      <Route exact={true} path="/reservations/:reservation_id/edit">
+        <EditReservation />
       </Route>
       <Route path="/search">
         <Search />
