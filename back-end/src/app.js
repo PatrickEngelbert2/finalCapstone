@@ -15,10 +15,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use(express.static(path.join(__dirname, '../../front-end/build')))
+
 app.use("/reservations", reservationsRouter);
 app.use("/tables", tablesRouter);
 
 app.use(notFound);
 app.use(errorHandler);
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname + '../../front-end/build/index.html'))
+  })
 
 module.exports = app;
